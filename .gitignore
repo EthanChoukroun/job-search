@@ -1,0 +1,4 @@
+*.json
+.env
+contacts_reached.csv
+linkedin_automation.py
