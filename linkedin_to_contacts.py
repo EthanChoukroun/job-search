@@ -14,7 +14,7 @@ LINKEDIN_PASSWORD = "Koalam2369"
 
 # 🔗 LinkedIn Login & Search URL (Replace with your search query)
 LINKEDIN_LOGIN_URL = "https://www.linkedin.com/login"
-SEARCH_URL = "https://www.linkedin.com/search/results/people/?currentCompany=%5B%2215823%22%5D&origin=FACETED_SEARCH&sid=saI&titleFreeText=Talent%20OR%20Recruiter%20OR%20Recruitment%20OR%20Quant%20OR%20Acquisition"
+SEARCH_URL = "https://www.linkedin.com/search/results/people/?currentCompany=%5B%226125149%22%5D&origin=FACETED_SEARCH&sid=SJE&titleFreeText=Talent%20OR%20Recruiter%20OR%20People%20OR%20Acquisition%20OR%20Quant"
 
 # 📂 Output CSV file
 CSV_FILE = "linkedin_profiles.csv"
@@ -93,12 +93,36 @@ def scrape_search_results(driver, search_url, max_pages=5):
     return all_profiles
 
 # 📝 Save results to CSV
+# 📝 Save unique results to CSV
 def save_to_csv(profiles):
+    existing_profiles = set()
+
+    # Load existing data if file exists
+    try:
+        with open(CSV_FILE, "r", encoding="utf-8") as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip header
+            for row in reader:
+                if len(row) >= 3:
+                    existing_profiles.add(row[2])  # Store LinkedIn URLs to avoid duplicates
+    except FileNotFoundError:
+        pass  # No existing file, continue
+
+    # Filter out duplicates before writing new data
+    unique_profiles = []
+    for profile in profiles:
+        _, _, profile_url = profile
+        if profile_url not in existing_profiles:
+            unique_profiles.append(profile)
+            existing_profiles.add(profile_url)  # Add to set to prevent future duplicates
+
+    # Write updated data
     with open(CSV_FILE, "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["first_name", "last_name", "linkedin_url"])
-        writer.writerows(profiles)
-    print(f"📂 Saved {len(profiles)} profiles to {CSV_FILE}")
+        writer.writerow(["first_name", "last_name", "linkedin_url"])  # Write header
+        writer.writerows(unique_profiles)  # Write unique contacts
+
+    print(f"📂 Saved {len(unique_profiles)} new profiles to {CSV_FILE} (Total: {len(existing_profiles)})")
 
 # 🚀 Run the script
 driver = setup_driver()
