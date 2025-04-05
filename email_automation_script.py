@@ -93,14 +93,14 @@ def schedule_email(service, recipient_email, subject, body_text, attachment_path
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
         if current_time == schedule_datetime:
             send_email(service, recipient_email, subject, body_text, attachment_path)
-            print(f"📅 Sent scheduled email to {recipient_email} at {schedule_datetime}")
+            print(f"Sent scheduled email to {recipient_email} at {schedule_datetime}")
             return schedule.CancelJob  # Remove the job after execution
 
-    # Schedule the job to run every minute and check if it's the correct time
+    
     schedule.every().minute.do(job)
-    print(f"⏳ Email to {recipient_email} scheduled for {schedule_datetime}")
+    print(f"Email to {recipient_email} scheduled for {schedule_datetime}")
 
-# Process the contact list and send emails
+
 def process_and_send_emails(csv_file, email_format, company_domain, subject, resume_choice, send_now=True, schedule_datetime=None):
     df = pd.read_csv(csv_file)
     service = get_gmail_service()
@@ -127,9 +127,9 @@ def process_and_send_emails(csv_file, email_format, company_domain, subject, res
       I recently completed my Master’s in Operations Research at UC Berkeley with a concentration in financial engineering. There, I built a strong foundation in machine learning, derivatives pricing, and statistical modeling, and contributed to a collaborative research project with JP Morgan AI Research focused on advanced predictive modeling for financial applications.
     </p>
 
-    <p>Most recently, at SeatGeek, I worked as a Quantitative Researcher where I:</p>
+    <p>Most recently, at EFT, I worked as a Quantitative Researcher where I:</p>
     <ul>
-      <li><b>Developed pricing algorithms</b> to improve price efficiency and reduce arbitrage across primary and secondary markets</li>
+      <li><b>Developed pricing algorithms</b> to improve price efficiency and reduce arbitrage opportunities</li>
       <li><b>Built real-time data pipelines</b> with Python and SQL to deploy ML models used for inventory allocation and pricing</li>
       <li><b>Collaborated cross-functionally</b> with engineers and product teams to scale model performance and impact</li>
     </ul>

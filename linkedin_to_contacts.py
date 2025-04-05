@@ -7,19 +7,23 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+import os
+from dotenv import load_dotenv
 
-# 🔑 LinkedIn Credentials
-LINKEDIN_EMAIL = "ethan.chkrn@gmail.com"
-LINKEDIN_PASSWORD = "Koalam2369"
+load_dotenv()
 
-# 🔗 LinkedIn Login & Search URL (Replace with your search query)
+
+LINKEDIN_EMAIL = os.getenv("LINKEDIN_EMAIL")
+LINKEDIN_PASSWORD = os.getenv("LINKEDIN_PASSWORD")
+
+
 LINKEDIN_LOGIN_URL = "https://www.linkedin.com/login"
 SEARCH_URL = "https://www.linkedin.com/search/results/people/?currentCompany=%5B%226125149%22%5D&origin=FACETED_SEARCH&sid=SJE&titleFreeText=Talent%20OR%20Recruiter%20OR%20People%20OR%20Acquisition%20OR%20Quant"
 
-# 📂 Output CSV file
+
 CSV_FILE = "linkedin_profiles.csv"
 
-# 🚀 Set up WebDriver
+
 def setup_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")  
@@ -27,7 +31,7 @@ def setup_driver():
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
 
-# 🔐 Log into LinkedIn
+
 def linkedin_login(driver):
     driver.get(LINKEDIN_LOGIN_URL)
     time.sleep(3)
@@ -42,9 +46,9 @@ def linkedin_login(driver):
     password_input.send_keys(Keys.RETURN)
 
     time.sleep(5)  # Wait for login to complete
-    print("✅ Logged into LinkedIn.")
+    print("Logged into LinkedIn.")
 
-# 🔍 Scrape LinkedIn Search Results
+
 def scrape_search_results(driver, search_url, max_pages=5):
     driver.get(search_url)
     time.sleep(5)
@@ -54,32 +58,32 @@ def scrape_search_results(driver, search_url, max_pages=5):
     for page in range(max_pages):
         print(f"📄 Scraping page {page + 1}...")
 
-        # Scroll to load profiles (fixes lazy loading)
+        
         driver.execute_script("window.scrollBy(0, 2000);")
         time.sleep(5)
 
-        # Find all profile links
+        
         profile_links = driver.find_elements(By.XPATH, "//a[contains(@href, '/in/')]")
-        print(f"🔗 Found {len(profile_links)} profile links.")
+        print(f"Found {len(profile_links)} profile links.")
 
         for link in profile_links:
             try:
                 profile_url = link.get_attribute("href")
 
-                # Extract name from aria-hidden span inside the link
+                
                 name_element = link.find_element(By.XPATH, ".//span[@aria-hidden='true']")
                 full_name = name_element.text.strip()
 
-                # Split first & last name
+                
                 name_parts = full_name.split()
                 first_name = name_parts[0]
                 last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
 
-                print(f"✅ Found: {first_name} {last_name} - {profile_url}")
+                print(f"Found: {first_name} {last_name} - {profile_url}")
                 all_profiles.append([first_name, last_name, profile_url])
 
             except Exception as e:
-                print(f"⚠️ Skipping a profile due to missing data: {e}")
+                print(f"Skipping a profile due to missing data: {e}")
 
         # Click "Next" button if it exists
         try:
@@ -87,13 +91,12 @@ def scrape_search_results(driver, search_url, max_pages=5):
             driver.execute_script("arguments[0].click();", next_button)
             time.sleep(5)  # Wait for next page to load
         except Exception:
-            print("🚫 No more pages or 'Next' button not found.")
+            print("No more pages or 'Next' button not found.")
             break
 
     return all_profiles
 
-# 📝 Save results to CSV
-# 📝 Save unique results to CSV
+
 def save_to_csv(profiles):
     existing_profiles = set()
 
@@ -116,7 +119,7 @@ def save_to_csv(profiles):
             unique_profiles.append(profile)
             existing_profiles.add(profile_url)  # Add to set to prevent future duplicates
 
-    # Write updated data
+    
     with open(CSV_FILE, "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["first_name", "last_name", "linkedin_url"])  # Write header
@@ -124,7 +127,7 @@ def save_to_csv(profiles):
 
     print(f"📂 Saved {len(unique_profiles)} new profiles to {CSV_FILE} (Total: {len(existing_profiles)})")
 
-# 🚀 Run the script
+
 driver = setup_driver()
 linkedin_login(driver)
 profiles = scrape_search_results(driver, SEARCH_URL, max_pages=5)
